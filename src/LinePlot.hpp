@@ -29,9 +29,9 @@
 #ifndef RESULTSVIEWER_LINEPLOT_HPP
 #define RESULTSVIEWER_LINEPLOT_HPP
 
-#include "../utilities/data/TimeSeries.hpp"
-#include "../utilities/data/Vector.hpp"
-#include "../utilities/data/Matrix.hpp"
+#include "TimeSeries.hpp"
+//#include "../utilities/data/Vector.hpp"
+//#include "../utilities/data/Matrix.hpp"
  
 #include <QWidget>
 #include <QPushButton>

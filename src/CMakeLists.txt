@@ -1,12 +1,15 @@
+project(ResultsViewer VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+
 set(target_name ResultsViewer)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+#include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # source files
 set(${target_name}_SRC
   main.cpp
   mainpage.hpp
   MainWindow.cpp
+  TreeView.hpp
   TreeView.cpp
   TableView.hpp
   TableView.cpp
@@ -18,12 +21,14 @@ set(${target_name}_SRC
   PlotView.cpp
   ChangeAliasDialog.hpp
   ChangeAliasDialog.cpp
+  SqlFile.hpp
   TabDropDock.hpp
   TabDropDock.cpp
-  TabBarDrag.hpp
-  TabBarDrag.cpp
-  PlotViewProperties.hpp
-  PlotViewProperties.cpp
+  #TabBarDrag.hpp
+  #TabBarDrag.cpp
+  TimeSeries.hpp
+  #PlotViewProperties.hpp
+  #PlotViewProperties.cpp
   LinePlot.hpp
   LinePlot.cpp  
   FloodPlot.hpp
@@ -33,21 +38,21 @@ set(${target_name}_SRC
 # ui files
 set(${target_name}_UI
   MainWindow.ui
-  PlotViewProperties.ui
+  #PlotViewProperties.ui
 )
 
 # moc files
-set(${target_name}_moc
-  MainWindow.hpp
-  TreeView.hpp
-  TableView.hpp
-  PlotView.hpp
-  BrowserView.hpp
-  ChangeAliasDialog.hpp
-  TabDropDock.hpp
-  TabBarDrag.hpp
-  PlotViewProperties.hpp
-)
+#set(${target_name}_moc
+  #MainWindow.hpp
+  #TreeView.hpp
+  #TableView.hpp
+  #PlotView.hpp
+  #BrowserView.hpp
+  #ChangeAliasDialog.hpp
+  #TabDropDock.hpp
+  #TabBarDrag.hpp
+  #PlotViewProperties.hpp
+#)
 
 # resource files
 set(${target_name}_qrc
@@ -55,7 +60,7 @@ set(${target_name}_qrc
 )
 
 ## Qt UI generation
-qt5_wrap_cpp_minimally(${target_name}_moc_src ${${target_name}_moc})
+#qt5_wrap_cpp(${target_name}_moc_src ${${target_name}_moc})
 
 qt5_wrap_ui(${target_name}_UIS ${${target_name}_UI})
 
@@ -81,7 +86,7 @@ if(APPLE)
   # set the name of the bundle icon
   set(MACOSX_BUNDLE_ICON_FILE rv.icns)
   # set all icons
-  set(ICON_SRC ../../icons/rv.icns)
+  set(ICON_SRC images/icons/rv.icns)
   set_source_files_properties(${ICON_SRC}
     PROPERTIES MACOSX_PACKAGE_LOCATION Resources
   )
@@ -105,17 +110,18 @@ add_executable(${target_name}
 )
 
 set(depends
-  qwt
-  openstudio_utilities
+#  qwt
+#  openstudio_utilities
 )
 
 target_link_libraries(${target_name} ${depends})
 
 if(MSVC)
-  target_link_libraries(${target_name} optimized ${QT_MAIN_LIB} debug ${QT_MAIN_LIB_D})
+  target_link_libraries(${target_name} Qt5::Widgets Qt5::WinMain)
+#  target_link_libraries(${target_name} optimized ${QT_MAIN_LIB} debug ${QT_MAIN_LIB_D})
 endif()
 
-AddPCH(${target_name})
+#AddPCH(${target_name})
 
 add_custom_command(TARGET ${target_name}
   POST_BUILD

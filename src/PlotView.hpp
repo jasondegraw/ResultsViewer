@@ -68,8 +68,8 @@
 #include <qwt/qwt_color_map.h>
 #include <qwt/qwt_plot_spectrogram.h>
 
-#include "../utilities/data/TimeSeries.hpp"
-#include "../utilities/time/Date.hpp"
+#include "TimeSeries.hpp"
+//#include "../utilities/time/Date.hpp"
 
 namespace resultsviewer{
 

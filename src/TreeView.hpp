@@ -33,7 +33,7 @@
 #include "FloodPlot.hpp"
 #include "ResultsViewerData.hpp"
 
-#include "../utilities/sql/SqlFile.hpp"
+#include "SqlFile.hpp"
 
 #include <QMainWindow>
 #include <QList>

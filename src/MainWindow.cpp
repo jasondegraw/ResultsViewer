@@ -27,13 +27,12 @@
  **********************************************************************************************************************/
 
 #include "MainWindow.hpp"
-#include <resultsviewer/AboutBox.hpp>
+#include <AboutBox.hpp>
 #include "ChangeAliasDialog.hpp"
 
-#include "../utilities/core/String.hpp"
-#include "../utilities/core/TemporaryDirectory.hpp"
-#include "../utilities/core/Filesystem.hpp"
-#include "../utilities/sql/SqlFileEnums.hpp"
+//#include "../utilities/core/String.hpp"
+//#include "../utilities/core/Filesystem.hpp"
+//#include "../utilities/sql/SqlFileEnums.hpp"
 
 #include <QComboBox>
 #include <QDesktopServices>
@@ -47,8 +46,8 @@
 #include <QUrl>
 
 using openstudio::ReportingFrequency;
-using openstudio::toPath;
-using openstudio::toQString;
+//using openstudio::toPath;
+//using openstudio::toQString;
 
 namespace resultsviewer{
 
@@ -1391,37 +1390,43 @@ namespace resultsviewer{
 
   void MainWindow::openFileList(const QStringList& fileList, bool t_makeTempCopies)
   {
-    if (!fileList.isEmpty())
-    {
-      for (QString file : fileList)
-      {
+    if (!fileList.isEmpty()) {
+      for (QString file : fileList) {
         if (!QFile::exists(file)) {
           QMessageBox::information(this, tr("File Open"), tr("File not found:\n" + file.toUtf8()));
           continue;
         }
 
-        file = QString::fromStdString(openstudio::filesystem::canonical(toPath(file)).string());
+        // Removed a dependency on OS's TemporaryDirectoy class here, code is a little suspect
+        QFileInfo info(file);
 
-        if (t_makeTempCopies)
-        {
-          openstudio::path basename = openstudio::toPath(QFileInfo(file).baseName());
-          openstudio::path fullpath = openstudio::toPath(file);
-          std::shared_ptr<openstudio::TemporaryDirectory> temporaryDirectory(new openstudio::TemporaryDirectory());
+        file = info.canonicalFilePath();
+
+        if (t_makeTempCopies) {
+          QString filename = info.fileName(); // This was baseName...
+          //openstudio::path basename = openstudio::toPath(QFileInfo(file).baseName());
+          //openstudio::path fullpath = openstudio::toPath(file);
+          //std::shared_ptr<openstudio::TemporaryDirectory> temporaryDirectory(new openstudio::TemporaryDirectory());
+          std::shared_ptr<QTemporaryDir> temporaryDirectory(new QTemporaryDir());
+          if(!temporaryDirectory->isValid()) {
+            throw std::runtime_error("Unable to create a temporary folder for temporary copies");
+          }
           m_temporaryDirectories.push_back(temporaryDirectory);
-          openstudio::path temporaryPath = openstudio::filesystem::canonical(temporaryDirectory->path());
-          openstudio::path newpath = temporaryPath / basename;
-          QFile::copy(openstudio::toQString(fullpath), openstudio::toQString(newpath));
+          QString temporaryPath = temporaryDirectory->path();
+          QString newpath = QDir(temporaryPath).filePath(filename);
+          QFile::copy(file, newpath);
 
-          openstudio::path eplustbl = fullpath.parent_path() / openstudio::toPath("eplustbl.htm");
-          if (QFile::exists(toQString(eplustbl)))
-          {
-            QFile::copy(openstudio::toQString(eplustbl), openstudio::toQString(temporaryPath / openstudio::toPath("eplustbl.htm")));
+          QString eplustbl = QDir(info.canonicalPath()).filePath("eplustbl.htm");
+          if (QFile::exists(eplustbl)) {
+            QFile::copy(eplustbl, QDir(temporaryPath).filePath("eplustbl.htm"));
           }
 
-          file = openstudio::toQString(newpath);
+          file = newpath;
+          info = QFileInfo(file);
         }
 
-        QFileInfo info(file); // handles windows links and "\"
+        //QFileInfo info(file); // handles windows links and "\"
+        // End of changes to remove TemporaryDirectoy
         QString filename = info.absoluteFilePath();
         QString alias = recentFilesAlias(filename);
         if (alias.isEmpty()) alias = m_data->defaultAlias(filename);

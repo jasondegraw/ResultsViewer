@@ -35,12 +35,11 @@
 #include "ResultsViewerData.hpp"
 #include "BrowserView.hpp"
 #include "TabDropDock.hpp"
-#include "FloodPlot.hpp"
-#include "LinePlot.hpp"
+//#include "FloodPlot.hpp"
+//#include "LinePlot.hpp"
 
-#include "../utilities/core/TemporaryDirectory.hpp"
-#include "../utilities/sql/SqlFile.hpp"
-#include "../utilities/data/TimeSeries.hpp"
+#include "SqlFile.hpp"
+#include "TimeSeries.hpp"
 
 #include <QMainWindow>
 #include <QTabWidget>
@@ -52,7 +51,9 @@
 #include <QAction>
 #include <QMenu>
 #include <QDockWidget>
+#include <QTemporaryDir>
 #include <string>
+#include <memory>
 #include <ui_MainWindow.h>
 
 // forward declarations to minimize header files
@@ -77,10 +78,10 @@ public:
   virtual ~MainWindow();
 
 private:
-  REGISTER_LOGGER("resultsviewer.MainWindow");
+  //REGISTER_LOGGER("resultsviewer.MainWindow");
 
   // list of files to be auto cleaned up when the process exits
-  std::list<std::shared_ptr<openstudio::TemporaryDirectory> > m_temporaryDirectories;
+  std::list<std::shared_ptr<QTemporaryDir> > m_temporaryDirectories;
 
   Ui::MainWindowClass ui;
 

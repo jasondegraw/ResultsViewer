@@ -31,7 +31,7 @@
 
 #include "LinePlot.hpp"
 #include "FloodPlot.hpp"
-#include "../utilities/sql/SqlFile.hpp"
+#include "SqlFile.hpp"
 
 #include <QMainWindow>
 #include <QTableWidget>

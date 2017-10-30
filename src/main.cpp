@@ -32,13 +32,16 @@
 
 #include "MainWindow.hpp"
 
-#include "../utilities/core/Application.hpp"
-#include "../utilities/core/ApplicationPathHelpers.hpp"
-#include "../utilities/core/Logger.hpp"
-#include "../utilities/core/FileLogSink.hpp"
-#include "../utilities/core/String.hpp"
+//#include "../utilities/core/Application.hpp"
+//#include "../utilities/core/ApplicationPathHelpers.hpp"
+//#include "../utilities/core/Logger.hpp"
+//#include "../utilities/core/FileLogSink.hpp"
+//#include "../utilities/core/String.hpp"
 
 #include <QApplication>
+// Had to add these for the minimal compile
+#include <QMessageBox>
+#include <QAbstractButton>
 
 int main(int argc, char *argv[])
 {
@@ -48,9 +51,9 @@ int main(int argc, char *argv[])
 #else
   const char *logfilepath = "/var/log/resultsviewer.log";
 #endif
-  openstudio::Logger::instance().standardOutLogger().setLogLevel(Debug);
-  openstudio::FileLogSink fileLog(openstudio::toPath(logfilepath));
-  fileLog.setLogLevel(Debug);
+  //openstudio::Logger::instance().standardOutLogger().setLogLevel(Debug);
+  //openstudio::FileLogSink fileLog(openstudio::toPath(logfilepath));
+  //fileLog.setLogLevel(Debug);
 #else
   openstudio::Logger::instance().standardOutLogger().setLogLevel(Warn);
 #endif
@@ -60,19 +63,19 @@ int main(int argc, char *argv[])
     cont = false;
 
     // Make the run path the default plugin search location
-    QCoreApplication::addLibraryPath(openstudio::toQString(openstudio::getApplicationDirectory()));
+    //QCoreApplication::addLibraryPath(openstudio::toQString(openstudio::getApplicationDirectory()));
 
     QApplication qApplication(argc,argv);
-    openstudio::Application::instance().setApplication(&qApplication);
+    //openstudio::Application::instance().setApplication(&qApplication);
 
     try {
-      resultsviewer::MainWindow w;
-      w.show();
+      //resultsviewer::MainWindow w;
+      //w.show();
 
-      return qApplication.exec();
+      //return qApplication.exec();
 
     } catch (const std::exception &e) {
-      LOG_FREE(Fatal, "ResultsViewer", "An unhandled exception has occurred: " << e.what());
+      //LOG_FREE(Fatal, "ResultsViewer", "An unhandled exception has occurred: " << e.what());
       cont = true;
       QMessageBox msgBox;
       msgBox.setWindowTitle("Unhandled Exception");
@@ -85,7 +88,7 @@ int main(int argc, char *argv[])
         cont = false;
       }
     } catch (...) {
-      LOG_FREE(Fatal, "ResultsViewer", "An unknown exception has occurred.");
+      //LOG_FREE(Fatal, "ResultsViewer", "An unknown exception has occurred.");
       cont = true;
       QMessageBox msgBox;
       msgBox.setWindowTitle("Unknown Exception");
