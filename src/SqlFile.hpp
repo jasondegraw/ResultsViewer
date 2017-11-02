@@ -32,6 +32,8 @@
 
 namespace resultsviewer{
 
+// HVAC System Timestep, Zone Timestep, Hourly, Daily, Monthly, RunPerio
+enum class ReportingFrequency { Detailed=1, Timestep, Hourly, Daily, Monthly, RunPeriod };
 
 /**
 SqlFile is a sqlite3 database interface class for E+ output.

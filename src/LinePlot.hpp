@@ -30,8 +30,6 @@
 #define RESULTSVIEWER_LINEPLOT_HPP
 
 #include "TimeSeries.hpp"
-//#include "../utilities/data/Vector.hpp"
-//#include "../utilities/data/Matrix.hpp"
  
 #include <QWidget>
 #include <QPushButton>
@@ -51,8 +49,11 @@
 #include <qwt/qwt_point_data.h>
 
 #include <cmath>
+#include <vector>
 
-namespace openstudio{
+namespace resultsviewer{
+
+enum class InterpMethod { LinearInterp, NearestInterp, HoldLastInterp, HoldNextInterp };
 
 /** LinePlotData is abstract class for data that can be used in a line plot.
  *  Derive from this class to plot your data.
@@ -197,8 +198,8 @@ private:
   std::string m_units;
   double m_fracDaysOffset;
   // testing Vector class
-  Vector m_x;
-  Vector m_y;
+  std::vector<double> m_x;
+  std::vector<double> m_y;
 };
 
 /** VectorLinePlotData converts two Vectors into Line plot data
@@ -209,7 +210,7 @@ class  VectorLinePlotData: public LinePlotData
 public:
 
   /// constructor with x and y vectors
-  VectorLinePlotData(const Vector& xVector, const Vector& yVector);
+  VectorLinePlotData(const std::vector<double>& xVector, const std::vector<double>& yVector);
 
   /// virtual destructor
   virtual ~VectorLinePlotData() {}
@@ -276,8 +277,8 @@ private:
   // set ranges and bounding box
   void init();
 
-  Vector m_xVector;
-  Vector m_yVector;
+  std::vector<double> m_xVector;
+  std::vector<double> m_yVector;
   InterpMethod m_interpMethod;
   double m_minX, m_maxX, m_minY, m_maxY;
   QRectF m_boundingRect;
@@ -285,6 +286,6 @@ private:
   std::string m_units;
 };
  
-} // openstudio
+} // resultsviewer
 
 #endif // RESULTSVIEWER_LINEPLOT_HPP

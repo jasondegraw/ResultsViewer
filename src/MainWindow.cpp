@@ -30,6 +30,8 @@
 #include <AboutBox.hpp>
 #include "ChangeAliasDialog.hpp"
 
+#include <optional>
+
 //#include "../utilities/core/String.hpp"
 //#include "../utilities/core/Filesystem.hpp"
 //#include "../utilities/sql/SqlFileEnums.hpp"

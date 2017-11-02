@@ -45,7 +45,9 @@
 #include <qwt/qwt_plot_zoomer.h>
 #include <qwt/qwt_plot_layout.h>
 
-namespace openstudio{
+#include <vector>
+
+namespace resultsviewer{
 
   /** FloodPlotColorMap is class for colormap that can be used in a flood plot.
   *   \deprecated { Qwt drawing widgets are deprecated in favor of Javascript }
@@ -58,7 +60,7 @@ namespace openstudio{
       enum ColorMapList {Gray, Jet};
 
       /// constructor
-      FloodPlotColorMap(const Vector& colorLevels, ColorMapList colorMap);
+      FloodPlotColorMap(const std::vector<double>& colorLevels, ColorMapList colorMap);
 
       /// virtual destructor
       virtual ~FloodPlotColorMap();
@@ -68,7 +70,7 @@ namespace openstudio{
       FloodPlotColorMap(const FloodPlotColorMap &);
       FloodPlotColorMap &operator=(const FloodPlotColorMap &);
 
-      Vector m_colorLevels;
+      std::vector<double> m_colorLevels;
       ColorMapList m_colorMapList;
       void init();
   };
@@ -243,12 +245,12 @@ namespace openstudio{
 
       /// constructor with x and y vectors
       MatrixFloodPlotData(const Vector& xVector,
-          const Vector& yVector,
+          const std::vector<double>& yVector,
           const Matrix& matrix);
 
       /// constructor with x and y vectors and interpolation method
-      MatrixFloodPlotData(const Vector& xVector,
-          const Vector& yVector,
+      MatrixFloodPlotData(const std::vector<double>& xVector,
+          const std::vector<double>& yVector,
           const Matrix& matrix,
           const InterpMethod interp);
 
@@ -264,8 +266,8 @@ namespace openstudio{
           const InterpMethod interp);
 
       /// constructor with x and y vectors and color map range
-      MatrixFloodPlotData(const Vector& xVector,
-          const Vector& yVector,
+      MatrixFloodPlotData(const std::vector<double>& xVector,
+          const std::vector<double>& yVector,
           const Matrix& matrix,
           QwtInterval colorMapRange );
 
@@ -335,16 +337,16 @@ namespace openstudio{
       void init();
       double m_minValue;
       double m_maxValue;
-      Vector m_xVector;
-      Vector m_yVector;
+      std::vector<double> m_xVector;
+      std::vector<double> m_yVector;
       Matrix m_matrix;
       InterpMethod m_interpMethod;
       double m_minX, m_maxX, m_minY, m_maxY;
       QwtInterval m_colorMapRange;
-      Vector m_colorMapScaleValues;
+      std::vector<double> m_colorMapScaleValues;
       std::string m_units;
   };
 
-} // openstudio
+} // resultsviewer
 
 #endif // RESULTSVIEWER_FLOODPLOT_HPP

@@ -30,11 +30,12 @@
 #include <cfloat>
 #include <qwt/qwt_painter.h>
 
+#include <algorithm>
 
 using namespace std;
 using namespace boost;
 
-namespace openstudio{
+namespace resultsviewer{
 
 TimeSeriesLinePlotData::TimeSeriesLinePlotData(TimeSeries timeSeries)
 : m_timeSeries(timeSeries),
@@ -150,8 +151,8 @@ size_t TimeSeriesLinePlotData::size(void) const
   return m_size; 
 }
 
-VectorLinePlotData::VectorLinePlotData(const Vector& xVector,
-                                       const Vector& yVector)
+VectorLinePlotData::VectorLinePlotData(const std::vector<double>& xVector,
+                                       const std::vector<double>& yVector)
 : m_xVector(xVector),
   m_yVector(yVector),
   m_interpMethod(NearestInterp)
@@ -199,7 +200,7 @@ double VectorLinePlotData::maxY() const
 /// minValue
 double VectorLinePlotData::minValue() const
 {
-  return minimum(m_yVector);
+  return std::min(m_yVector.begin(), m_yVector.end());
 }
 
 /// maxValue
@@ -277,4 +278,4 @@ void VectorLinePlotData::units(const std::string &unit) { m_units = unit; };
 /// units for plotting on axes or scaling
 std::string VectorLinePlotData::units() const { return m_units; };
 
-} // openstudio
+} // resultsviewer

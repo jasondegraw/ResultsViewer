@@ -26,17 +26,52 @@
 #define RESULTSVIEWER_TIMESERIES_HPP
 
 #include <string>
-#include <memory>
+#include <vector>
+
+#include <QDateTime>
 
 namespace resultsviewer{
 
+static std::vector<long long> fixSeconds(std::vector <long long> seconds, std::vector<double> values)
+{
+  auto len = std::min(seconds.size(), values.size());
+  if(len == 0) {
+    return { 0 };
+  }
+  return std::vector<long long>(seconds.begin(), seconds.begin() + len);
+}
+
+static std::vector<double> fixValues(std::vector <long long> seconds, std::vector<double> values)
+{
+  auto len = std::min(seconds.size(), values.size());
+  if(len == 0) {
+    return { 0 };
+  }
+  return std::vector<double>(values.begin(), values.begin() + len);
+}
 
 /**
 TimeSeries is an object that connects a series of times to a series of values.
 */
-class TimeSeries
+struct TimeSeries
 {
+  TimeSeries(QDateTime start, std::vector <long long> seconds, std::vector<double> values) : startDateTime(start), seconds(fixSeconds(seconds, values)), 
+    values(fixValues(seconds, values))
+  {}
 
+  TimeSeries(QDateTime start, std::vector <long long> seconds, std::vector<double> values, QString const units) : startDateTime(start), seconds(fixSeconds(seconds, values)),
+    values(fixValues(seconds, values))
+  {}
+
+  QDateTime firstReport() const
+  {
+    return startDateTime.addSecs(seconds[0]);
+  }
+
+  const QDateTime startDateTime;
+  const std::vector<long long> seconds;
+  const std::vector<double> values;
+  const QString units;
 };
 
 
