@@ -27,14 +27,13 @@
  **********************************************************************************************************************/
 
 #include "FloodPlot.hpp"
-#include "../utilities/time/Time.hpp"
+#include "Utilities.hpp"
 
-using namespace std;
-using namespace boost;
+#include <algorithm>
 
-namespace openstudio{
+namespace resultsviewer{
 
-FloodPlotColorMap::FloodPlotColorMap(const Vector& colorLevels, FloodPlotColorMap::ColorMapList colorMapList)
+FloodPlotColorMap::FloodPlotColorMap(const std::vector<double>& colorLevels, FloodPlotColorMap::ColorMapList colorMapList)
   : QwtLinearColorMap(),
     m_colorLevels(colorLevels),
     m_colorMapList(colorMapList)
@@ -55,8 +54,13 @@ void FloodPlotColorMap::init()
   int r, g, b;
   unsigned int i,j;
   QColor minColor, maxColor; // colors at interval ends
-  double min = openstudio::minimum(m_colorLevels);
-  double max = openstudio::maximum(m_colorLevels);
+  auto minel = std::min_element(m_colorLevels.begin(), m_colorLevels.end());
+  auto maxel = std::max_element(m_colorLevels.begin(), m_colorLevels.end());
+  if(minel == std::end(m_colorLevels) || maxel == std::end(m_colorLevels)) {
+    return;
+  }
+  double min = *minel;
+  double max = *maxel;
   if (max == min)
   {
     return;
@@ -67,78 +71,68 @@ void FloodPlotColorMap::init()
       minColor = QColor(0,0,0);
       maxColor = QColor(255,255,255);
       setColorInterval(minColor, maxColor); // end points
-            for (i = 0; i < colormapLength; i++)
-            {
-                double gray = 1.0 * i / (colormapLength - 1);
-                r = (int)(255 * gray);
-                g = (int)(255 * gray);
-                b = (int)(255 * gray);
-        addColorStop( (m_colorLevels(i) - min) / (max - min), QColor(r, g, b));
-            }
+      for(i = 0; i < colormapLength; i++) {
+        double gray = 1.0 * i / (colormapLength - 1);
+        r = (int)(255 * gray);
+        g = (int)(255 * gray);
+        b = (int)(255 * gray);
+        addColorStop((m_colorLevels[i] - min) / (max - min), QColor(r, g, b));
+      }
       break;
     case Jet:
       Matrix cMatrix(colormapLength,3);
-            unsigned int n = (int)ceil(colormapLength / 4.0);
-            int nMod = 0;
-            Vector  fArray(3 * n - 1);
-      Vector  red(fArray.size());
-            Vector  green(fArray.size());
-            Vector  blue(fArray.size());
+      unsigned int n = (int)ceil(colormapLength / 4.0);
+      int nMod = 0;
+      std::vector<double> fArray(3 * n - 1);
+      std::vector<double> red(fArray.size());
+      std::vector<double> green(fArray.size());
+      std::vector<double> blue(fArray.size());
 
 
-      for (i = 0; i < colormapLength; i++)
-            {
+      for(i = 0; i < colormapLength; i++) {
         cMatrix(i, 0) = 0;
         cMatrix(i, 1) = 0;
         cMatrix(i, 2) = 0;
-            }
+      }
 
 
-            if (colormapLength % 4 == 1)
-            {
-                nMod = 1;
-            }
+      if(colormapLength % 4 == 1) {
+        nMod = 1;
+      }
 
-      for (i = 0; i <fArray.size(); i++)
-            {
-                if (i < n)
-                    fArray(i) = (float)(i + 1) / n;
-                else if (i >= n && i < 2 * n - 1)
-                    fArray(i) = 1.0;
-                else if (i >= 2 * n - 1)
-                    fArray(i) = (float)(3 * n - 1 - i) / n;
-        green(i) = (int)ceil(n / 2.0) - nMod + i;
-                red(i) = green(i) + n;
-                blue(i) = green(i) - n;
-            }
+      for(i = 0; i < fArray.size(); i++) {
+        if(i < n)
+          fArray[i] = (float)(i + 1) / n;
+        else if(i >= n && i < 2 * n - 1)
+          fArray[i] = 1.0;
+        else if(i >= 2 * n - 1)
+          fArray[i] = (float)(3 * n - 1 - i) / n;
+        green[i] = (int)ceil(n / 2.0) - nMod + i;
+        red[i] = green[i] + n;
+        blue[i] = green[i] - n;
+      }
 
-            int nb = 0;
-            for (i = 0; i < blue.size(); i++)
-            {
-                if (blue(i) > 0)
-                    nb++;
-            }
+      int nb = 0;
+      for(i = 0; i < blue.size(); i++) {
+        if(blue[i] > 0)
+          nb++;
+      }
 
-            for (i = 0; i < colormapLength; i++)
-            {
-                for (j = 0; j < red.size(); j++)
-                {
-                    if (i == red(j) && red(j) < colormapLength)
-                    {
-                        cMatrix(i, 0) = fArray(i - red(0));
-                    }
-                }
-                for (j = 0; j < green.size(); j++)
-                {
-                    if (i == green(j) && green(j) < colormapLength)
-                        cMatrix(i, 1) = fArray(i - (int)green(0));
-                }
-                for ( j = 0; j < blue.size(); j++)
-                {
-                    if (i == blue(j) && blue(j) >= 0)
-            cMatrix(i, 2) = fArray(fArray.size() - 1 - nb + i);
-                }
-            }
+      for(i = 0; i < colormapLength; i++) {
+        for(j = 0; j < red.size(); j++) {
+          if(i == red[j] && red[j] < colormapLength) {
+            cMatrix(i, 0) = fArray[i - red[0]];
+          }
+        }
+        for(j = 0; j < green.size(); j++) {
+          if(i == green[j] && green[j] < colormapLength)
+            cMatrix(i, 1) = fArray[i - (int)green[0]];
+        }
+        for(j = 0; j < blue.size(); j++) {
+          if(i == blue[j] && blue[j] >= 0)
+            cMatrix(i, 2) = fArray[fArray.size() - 1 - nb + i];
+        }
+      }
 
       // set before adding color stops
       // default from http://www.matthiaspospiech.de/blog/2008/06/16/qwt-spectrogramm-plot-with-data-arrays/
@@ -170,15 +164,14 @@ void FloodPlotColorMap::init()
         r = (int)(cMatrix(i, 0) * 255);
         g = (int)(cMatrix(i, 1) * 255);
         b = (int)(cMatrix(i, 2) * 255);
-        addColorStop( (m_colorLevels(i) - min) / (max - min), QColor(r, g, b));
+        addColorStop( (m_colorLevels[i] - min) / (max - min), QColor(r, g, b));
             }
       break;
   }
 
 }
 
-FloodPlotData::FloodPlotData()
-  : QwtRasterData()
+FloodPlotData::FloodPlotData() : QwtRasterData()
 {
 
 }
@@ -191,13 +184,13 @@ FloodPlotData::~FloodPlotData()
 TimeSeriesFloodPlotData::TimeSeriesFloodPlotData(TimeSeries timeSeries)
 : FloodPlotData(),
   m_timeSeries(timeSeries),
-  m_minValue(minimum(timeSeries.values())),
-  m_maxValue(maximum(timeSeries.values())),
+  m_minValue(timeSeries.minimum()),
+  m_maxValue(timeSeries.maximum()),
   m_minX(timeSeries.firstReportDateTime().date().dayOfYear()),
-  m_maxX(ceil(timeSeries.daysFromFirstReport()[timeSeries.daysFromFirstReport().size()-1]+timeSeries.firstReportDateTime().date().dayOfYear()+timeSeries.firstReportDateTime().time().totalDays())), // end day
+  m_maxX(ceil(timeSeries.daysFromFirstReport()[timeSeries.daysFromFirstReport().size()-1]+timeSeries.firstReportDateTime().date().dayOfYear()+totalDays(timeSeries.firstReportDateTime().time()))), // end day
   m_minY(0), // start hour
   m_maxY(24), // end hour
-  m_startFractionalDay(timeSeries.firstReportDateTime().date().dayOfYear()+timeSeries.firstReportDateTime().time().totalDays()),
+  m_startFractionalDay(timeSeries.firstReportDateTime().date().dayOfYear()+totalDays(timeSeries.firstReportDateTime().time())),
   m_colorMapRange(QwtInterval(m_minValue, m_maxValue))
 {
   if (m_colorMapRange.minValue() == m_colorMapRange.maxValue())
@@ -209,19 +202,19 @@ TimeSeriesFloodPlotData::TimeSeriesFloodPlotData(TimeSeries timeSeries)
   setInterval(Qt::XAxis, QwtInterval(m_minX, m_maxX));
   setInterval(Qt::YAxis, QwtInterval(m_minY, m_maxY));
   setInterval(Qt::ZAxis, m_colorMapRange);
-  m_units = timeSeries.units();
+  m_units = timeSeries.units;
 }
 
 TimeSeriesFloodPlotData::TimeSeriesFloodPlotData(TimeSeries timeSeries,  QwtInterval colorMapRange)
 : FloodPlotData(),
   m_timeSeries(timeSeries),
-  m_minValue(minimum(timeSeries.values())),
-  m_maxValue(maximum(timeSeries.values())),
+  m_minValue(timeSeries.minimum()),
+  m_maxValue(timeSeries.maximum()),
   m_minX(timeSeries.firstReportDateTime().date().dayOfYear()),
-  m_maxX(ceil(timeSeries.daysFromFirstReport()[timeSeries.daysFromFirstReport().size()-1]+timeSeries.firstReportDateTime().date().dayOfYear()+timeSeries.firstReportDateTime().time().totalDays())), // end day
+  m_maxX(ceil(timeSeries.daysFromFirstReport()[timeSeries.daysFromFirstReport().size()-1]+timeSeries.firstReportDateTime().date().dayOfYear()+totalDays(timeSeries.firstReportDateTime().time()))), // end day
   m_minY(0), // start hour
   m_maxY(24), // end hour
-  m_startFractionalDay(timeSeries.firstReportDateTime().date().dayOfYear()+timeSeries.firstReportDateTime().time().totalDays()),
+  m_startFractionalDay(timeSeries.firstReportDateTime().date().dayOfYear()+totalDays(timeSeries.firstReportDateTime().time())),
   m_colorMapRange(colorMapRange)
 {
   if (m_colorMapRange.minValue() == m_colorMapRange.maxValue())
@@ -233,7 +226,7 @@ TimeSeriesFloodPlotData::TimeSeriesFloodPlotData(TimeSeries timeSeries,  QwtInte
   setInterval(Qt::XAxis, QwtInterval(m_minX, m_maxX));
   setInterval(Qt::YAxis, QwtInterval(m_minY, m_maxY));
   setInterval(Qt::ZAxis, m_colorMapRange);
-  m_units = timeSeries.units();
+  m_units = timeSeries.units;
 }
 
 TimeSeriesFloodPlotData* TimeSeriesFloodPlotData::copy() const
@@ -263,9 +256,9 @@ QRectF TimeSeriesFloodPlotData::pixelHint(const QRectF& area) const
 
   double dx = 1.0; // one day
   double dy = 1.0 / 24.0; // default hourly
-  openstudio::OptionalTime intervalLength = m_timeSeries.intervalLength();
-  if (intervalLength){
-    dy = intervalLength->totalHours() / 24.0;
+  std::optional<long long> intervalsecs = m_timeSeries.interval;
+  if (intervalsecs){
+    dy = intervalsecs.value() / 86400.0;
   }
   QRectF rect(m_minX, m_minY, dx, dy);
 
@@ -306,19 +299,19 @@ void TimeSeriesFloodPlotData::maxValue(double max) { m_maxValue = max; };
 /// sumValue
 double TimeSeriesFloodPlotData::sumValue() const
 {
-  return sum(m_timeSeries.values());
+  return m_timeSeries.sum();
 }
 
 /// meanValue
 double TimeSeriesFloodPlotData::meanValue() const
 {
-  return mean(m_timeSeries.values());
+  return m_timeSeries.sum()/static_cast<double>(m_timeSeries.values.size());
 }
 
 /// stdDevValue
 double TimeSeriesFloodPlotData::stdDevValue() const
 {
-  return stdDev(m_timeSeries.values());
+  return m_timeSeries.stdev();
 }
 
 void TimeSeriesFloodPlotData::colorMapRange(QwtInterval colorMapRange) 
@@ -338,20 +331,20 @@ std::string TimeSeriesFloodPlotData::units() const
 
 MatrixFloodPlotData::MatrixFloodPlotData(const Matrix& matrix)
 : FloodPlotData(),
-  m_xVector(linspace(0, matrix.size1() - 1, matrix.size1())),
-  m_yVector(linspace(0, matrix.size2()-1, matrix.size2())),
+  m_xVector(linspace(0.0, static_cast<double>(matrix.size1()-1), matrix.size1())),
+  m_yVector(linspace(0.0, static_cast<double>(matrix.size2()-1), matrix.size2())),
   m_matrix(matrix),
-  m_interpMethod(NearestInterp)
+  m_interpMethod(InterpMethod::NearestInterp)
 {
   init();
 }
 
 MatrixFloodPlotData::MatrixFloodPlotData(const Matrix& matrix,  QwtInterval colorMapRange)
 : FloodPlotData(),
-  m_xVector(linspace(0, matrix.size1() - 1, matrix.size1())),
-  m_yVector(linspace(0, matrix.size2()-1, matrix.size2())),
+  m_xVector(linspace(0.0, static_cast<double>(matrix.size1()-1), matrix.size1())),
+  m_yVector(linspace(0.0, static_cast<double>(matrix.size2()-1), matrix.size2())),
   m_matrix(matrix),
-  m_interpMethod(NearestInterp)
+  m_interpMethod(InterpMethod::NearestInterp)
 {
   init();
   m_colorMapRange = colorMapRange;
@@ -359,21 +352,21 @@ MatrixFloodPlotData::MatrixFloodPlotData(const Matrix& matrix,  QwtInterval colo
 
 
 
-MatrixFloodPlotData::MatrixFloodPlotData(const Vector& xVector,
-                                         const Vector& yVector,
+MatrixFloodPlotData::MatrixFloodPlotData(const std::vector<double>& xVector,
+                                         const std::vector<double>& yVector,
                                          const Matrix& matrix)
 : FloodPlotData(),
   m_xVector(xVector),
   m_yVector(yVector),
   m_matrix(matrix),
-  m_interpMethod(NearestInterp)
+  m_interpMethod(InterpMethod::NearestInterp)
 {
   init();
 }
 
 
-MatrixFloodPlotData::MatrixFloodPlotData(const Vector& xVector,
-                                         const Vector& yVector,
+MatrixFloodPlotData::MatrixFloodPlotData(const std::vector<double>& xVector,
+                                         const std::vector<double>& yVector,
                                          const Matrix& matrix,
                                          const InterpMethod interp)
 : FloodPlotData(),
@@ -392,7 +385,7 @@ MatrixFloodPlotData::MatrixFloodPlotData(const std::vector<double>& xVector,
   m_xVector(xVector.size()),
   m_yVector(yVector.size()),
   m_matrix(xVector.size(),yVector.size()),
-  m_interpMethod(NearestInterp)
+  m_interpMethod(InterpMethod::NearestInterp)
 {
   std::copy(xVector.begin(),xVector.end(),m_xVector.begin());
   std::copy(yVector.begin(),yVector.end(),m_yVector.begin());
@@ -424,15 +417,15 @@ MatrixFloodPlotData::MatrixFloodPlotData(const std::vector<double>& xVector,
 
 
 
-MatrixFloodPlotData::MatrixFloodPlotData(const Vector& xVector,
-                                         const Vector& yVector,
+MatrixFloodPlotData::MatrixFloodPlotData(const std::vector<double>& xVector,
+                                         const std::vector<double>& yVector,
                                          const Matrix& matrix,
                                          QwtInterval colorMapRange)
 : FloodPlotData(),
   m_xVector(xVector),
   m_yVector(yVector),
   m_matrix(matrix),
-  m_interpMethod(NearestInterp)
+  m_interpMethod(InterpMethod::NearestInterp)
 {
   init();
   m_colorMapRange = colorMapRange;
@@ -511,13 +504,13 @@ void MatrixFloodPlotData::maxValue(double max) { m_maxValue = max; };
 /// sumValue
 double MatrixFloodPlotData::sumValue() const
 {
-  return sum(m_matrix);
+  return std::accumulate(std::begin(m_matrix), std::end(m_matrix), 0.0);
 }
 
 /// meanValue
 double MatrixFloodPlotData::meanValue() const
 {
-  return mean(m_matrix);
+  return std::accumulate(std::begin(m_matrix), std::end(m_matrix), 0.0)/(double)m_matrix.size();
 }
 
 /// stdDevValue
@@ -545,13 +538,13 @@ void MatrixFloodPlotData::init(){
     throw std::runtime_error("Incorrectly sized matrix or vector for MatrixFloodPlotData");
   }
 
-  m_minX = minimum(m_xVector);
-  m_maxX = maximum(m_xVector);
-  m_minY = minimum(m_yVector);
-  m_maxY = maximum(m_yVector);
+  m_minX = *std::min_element(std::begin(m_xVector), std::end(m_xVector));
+  m_maxX = *std::max_element(std::begin(m_xVector), std::end(m_xVector));
+  m_minY = *std::min_element(std::begin(m_yVector), std::end(m_yVector));
+  m_maxY = *std::max_element(std::begin(m_yVector), std::end(m_yVector));
 
-  m_minValue = minimum(m_matrix);
-  m_maxValue = maximum(m_matrix);
+  m_minValue = *std::min_element(std::begin(m_matrix), std::end(m_matrix));
+  m_maxValue = *std::max_element(std::begin(m_matrix), std::end(m_matrix));
 
   // default behavior is to have entire data range considered for colormapping
   // override by setting colorMapRange

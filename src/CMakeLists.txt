@@ -8,6 +8,7 @@ set(target_name ResultsViewer)
 set(${target_name}_SRC
   main.cpp
   mainpage.hpp
+  MainWindow.hpp
   MainWindow.cpp
   TreeView.hpp
   TreeView.cpp
@@ -17,6 +18,7 @@ set(${target_name}_SRC
   ResultsViewerData.cpp
   BrowserView.hpp
   BrowserView.cpp
+  Matrix.hpp
   PlotView.hpp
   PlotView.cpp
   ChangeAliasDialog.hpp
@@ -26,7 +28,9 @@ set(${target_name}_SRC
   TabDropDock.cpp
   #TabBarDrag.hpp
   #TabBarDrag.cpp
+  TimeDelta.hpp
   TimeSeries.hpp
+  Utilities.hpp
   #PlotViewProperties.hpp
   #PlotViewProperties.cpp
   LinePlot.hpp
@@ -117,7 +121,8 @@ set(depends
 target_link_libraries(${target_name} ${depends})
 
 if(MSVC)
-  target_link_libraries(${target_name} Qt5::Widgets Qt5::WinMain)
+	target_link_libraries(${target_name} Qt5::Widgets Qt5::WinMain
+                              Qt5::PrintSupport)
 #  target_link_libraries(${target_name} optimized ${QT_MAIN_LIB} debug ${QT_MAIN_LIB_D})
 endif()
 

@@ -30,8 +30,8 @@
 #define RESULTSVIEWER_FLOODPLOT_HPP
 
 #include "TimeSeries.hpp"
-//#include "../utilities/data/Vector.hpp"
-//#include "../utilities/data/Matrix.hpp"
+#include "Utilities.hpp"
+#include "Matrix.hpp"
 
 #include <QWidget>
 #include <QPushButton>
@@ -244,7 +244,7 @@ namespace resultsviewer{
       MatrixFloodPlotData(const Matrix& matrix, QwtInterval colorMapRange );
 
       /// constructor with x and y vectors
-      MatrixFloodPlotData(const Vector& xVector,
+      MatrixFloodPlotData(const std::vector<double>& xVector,
           const std::vector<double>& yVector,
           const Matrix& matrix);
 

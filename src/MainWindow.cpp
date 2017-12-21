@@ -29,7 +29,7 @@
 #include "MainWindow.hpp"
 #include <AboutBox.hpp>
 #include "ChangeAliasDialog.hpp"
-
+#include "TimeSeries.hpp"
 #include <optional>
 
 //#include "../utilities/core/String.hpp"
@@ -516,7 +516,7 @@ namespace resultsviewer{
       {
         plotViewData.alias.append(m_data->alias(rvplotData.filename));
         plotViewData.plotSource.append(rvplotData.filename);
-        openstudio::OptionalTimeSeries ts = m_data->sqlFile(rvplotData.filename).timeSeries(openstudio::toString(rvplotData.envPeriod), openstudio::toString(rvplotData.reportFreq), openstudio::toString(rvplotData.variableName), openstudio::toString(rvplotData.keyName));
+        std::optional<TimeSeries> ts = m_data->sqlFile(rvplotData.filename).timeSeries(openstudio::toString(rvplotData.envPeriod), openstudio::toString(rvplotData.reportFreq), openstudio::toString(rvplotData.variableName), openstudio::toString(rvplotData.keyName));
         if (ts)
         {
           if (ts->values().size() > 0) {
@@ -561,8 +561,6 @@ namespace resultsviewer{
 
     return plotViewData;
   }
-
-
 
   void MainWindow::slotAddFloodPlot(const std::vector<resultsviewer::ResultsViewerPlotData> &fpVec)
   {

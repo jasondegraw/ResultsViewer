@@ -77,9 +77,9 @@ public:
   ~ResultsViewerData();
 
   bool isFileOpen(const QString& filename);
-  bool isFileOpen(openstudio::SqlFile sqlFile);
-  openstudio::SqlFile sqlFile(const QString& filename);
-  int addFile(const QString& alias, openstudio::SqlFile sqlFile);
+  bool isFileOpen(SqlFile sqlFile);
+  SqlFile sqlFile(const QString& filename);
+  int addFile(const QString& alias, SqlFile sqlFile);
   int addFile(const QString& alias, const QString& filename);
   void removeFile(const QString& filename);
   bool isSupportedSqlFileFormat(const QString& filename);
@@ -97,7 +97,7 @@ public:
   bool aliasExists(const QString& alias);
 
 private:
-  std::map<openstudio::SqlFile, QString> m_sqlFileMap;
+  std::map<SqlFile, QString> m_sqlFileMap;
 };
 
 

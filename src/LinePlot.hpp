@@ -30,6 +30,7 @@
 #define RESULTSVIEWER_LINEPLOT_HPP
 
 #include "TimeSeries.hpp"
+#include "Utilities.hpp"
  
 #include <QWidget>
 #include <QPushButton>
@@ -52,8 +53,6 @@
 #include <vector>
 
 namespace resultsviewer{
-
-enum class InterpMethod { LinearInterp, NearestInterp, HoldLastInterp, HoldNextInterp };
 
 /** LinePlotData is abstract class for data that can be used in a line plot.
  *  Derive from this class to plot your data.
@@ -103,7 +102,7 @@ public:
   virtual void units(const std::string &unit) = 0;
 
   /// units for plotting on axes or scaling
-  virtual std::string units() const = 0;
+  virtual QString units() const = 0;
 
   virtual size_t size() const = 0;
   
@@ -183,7 +182,7 @@ public:
   void units(const std::string &unit) override;
 
   /// units for plotting on axes or scaling
-  std::string units() const override;
+  QString units() const override;
 
 private:
   TimeSeries m_timeSeries;
@@ -195,7 +194,7 @@ private:
   double m_maxY;
   size_t m_size;
   QRectF m_boundingRect;
-  std::string m_units;
+  QString m_units;
   double m_fracDaysOffset;
   // testing Vector class
   std::vector<double> m_x;
@@ -270,7 +269,7 @@ public:
   void units(const std::string &unit) override;
 
   /// units for plotting on axes or scaling
-  std::string units() const override;
+  QString units() const override;
 
 private:
 
@@ -283,7 +282,7 @@ private:
   double m_minX, m_maxX, m_minY, m_maxY;
   QRectF m_boundingRect;
   size_t m_size;
-  std::string m_units;
+  QString m_units;
 };
  
 } // resultsviewer

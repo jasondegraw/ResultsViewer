@@ -39,6 +39,7 @@
 #include <qwt/qwt_series_data.h>
 #include <qwt/qwt_scale_engine.h>
 
+#include <QApplication>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QButtonGroup>
@@ -48,12 +49,10 @@
 #include <QMessageBox>
 #include <QCursor>
 
-using namespace openstudio;
-
 namespace resultsviewer{
 
 
-  LinePlotCurve::LinePlotCurve(QString& title, openstudio::TimeSeriesLinePlotData& data)
+  LinePlotCurve::LinePlotCurve(QString& title, TimeSeriesLinePlotData& data)
   {
     setTitle(title);
     m_yType = resultsviewer::unScaledY;
@@ -62,7 +61,7 @@ namespace resultsviewer{
   }
 
 
-  void LinePlotCurve::setLinePlotData(const openstudio::LinePlotData& data)
+  void LinePlotCurve::setLinePlotData(const LinePlotData& data)
   {
     if (data.size() <=0) return;
 
@@ -180,7 +179,7 @@ namespace resultsviewer{
     }
   }
 
-  void PlotLegend::addLegendItem(resultsviewer::LinePlotCurve *curve)
+  void PlotLegend::addLegendItem(LinePlotCurve *curve)
   {
     // update with paint event and curve styles
     auto curveStyle = new QLabel(this);
@@ -381,7 +380,7 @@ namespace resultsviewer{
       m_spectrogram->setCachePolicy(QwtPlotRasterItem::PaintCache); // default is NoCache 
       //m_spectrogram->setRenderThreadCount(renderThreadCount); // seems slower than without
 
-      m_colorMapType = openstudio::FloodPlotColorMap::Jet;
+      m_colorMapType = FloodPlotColorMap::Jet;
       m_colorMapLength = 64;
       m_spectrogram->attach(m_plot);
       m_plot->plotLayout()->setAlignCanvasToScales(true);
@@ -398,7 +397,7 @@ namespace resultsviewer{
       m_spectrogram->setCachePolicy(QwtPlotRasterItem::PaintCache); // default is NoCache 
       //m_spectrogram->setRenderThreadCount(renderThreadCount); // seems slower than without
 
-      m_colorMapType = openstudio::FloodPlotColorMap::Jet;
+      m_colorMapType = FloodPlotColorMap::Jet;
       m_colorMapLength = 64;
       m_spectrogram->attach(m_plot);
       m_plot->plotLayout()->setAlignCanvasToScales(true);
@@ -701,11 +700,11 @@ namespace resultsviewer{
     switch(m_plotType)
     {
     case RVPV_LINEPLOT:
-      if ((_plotViewData.ts) && (_plotViewData.ts->values().size() > 0))
+      if ((_plotViewData.ts) && (_plotViewData.ts->values.size() > 0))
         linePlotItem(_plotViewData, t_workCanceled);
       break;
     case RVPV_FLOODPLOT:
-      if ((_plotViewData.ts) && (_plotViewData.ts->values().size() > 0))
+      if ((_plotViewData.ts) && (_plotViewData.ts->values.size() > 0))
         floodPlotItem(_plotViewData);
       break;
     case RVPV_ILLUMINANCEPLOT:
@@ -747,13 +746,13 @@ namespace resultsviewer{
     openstudio::SqlFile sqlFile2(openstudio::toPath(_plotViewData2.plotSource[0]));
 
     // list of hourly reports for the illuminance map
-    std::vector< std::pair<int, openstudio::DateTime> > reportIndicesDates1 = sqlFile1.illuminanceMapHourlyReportIndicesDates(openstudio::toString(_plotViewData1.dbIdentifier));
+    std::vector< std::pair<int, QDateTime> > reportIndicesDates1 = sqlFile1.illuminanceMapHourlyReportIndicesDates(openstudio::toString(_plotViewData1.dbIdentifier));
     if (reportIndicesDates1.size() <= 0)
     {
       //    LOG(Error, "no report indices for illuminance map '" << openstudio::toString(_plotViewData1.legendName) << "'");
       return;
     }
-    std::vector< std::pair<int, openstudio::DateTime> > reportIndicesDates2 = sqlFile2.illuminanceMapHourlyReportIndicesDates(openstudio::toString(_plotViewData2.dbIdentifier));
+    std::vector< std::pair<int, QDateTime> > reportIndicesDates2 = sqlFile2.illuminanceMapHourlyReportIndicesDates(openstudio::toString(_plotViewData2.dbIdentifier));
     if (reportIndicesDates2.size() <= 0)
     {
       //    LOG(Error, "no report indices for illuminance map '" << openstudio::toString(_plotViewData2.legendName) << "'");
@@ -763,8 +762,8 @@ namespace resultsviewer{
     // use common dates
     m_illuminanceMapDifferenceReportIndices.clear();
 
-    std::vector< std::pair<int, openstudio::DateTime> >::iterator it1;
-    std::vector< std::pair<int, openstudio::DateTime> >::iterator it2;
+    std::vector< std::pair<int, QDateTime> >::iterator it1;
+    std::vector< std::pair<int, QDateTime> >::iterator it2;
     int count=0;
 
     for (it1 = reportIndicesDates1.begin(); it1 != reportIndicesDates1.end(); ++it1)
@@ -782,7 +781,7 @@ namespace resultsviewer{
       {
         std::pair< int, int > pairIndices( (*it1).first,  (*it2).first );
         m_illuminanceMapDifferenceReportIndices.push_back( pairIndices );
-        std::pair< int, openstudio::DateTime > pairIndexDate( count,  (*it1).second );
+        std::pair< int, QDateTime > pairIndexDate( count,  (*it1).second );
         m_illuminanceMapReportIndicesDates.push_back( pairIndexDate );
         count++;
       }
@@ -806,7 +805,7 @@ namespace resultsviewer{
     }
     bufferIlluminanceMapGridPoints(x1, y1);
     bufferIlluminanceMapGridPoints(x2, y2);
-    auto data = new openstudio::MatrixFloodPlotData(x1,y1,illuminanceDiff,openstudio::LinearInterp);
+    auto data = new MatrixFloodPlotData(x1,y1,illuminanceDiff,openstudio::LinearInterp);
 
     m_illuminanceMapData[0] = data->copy();
 
@@ -1091,21 +1090,21 @@ namespace resultsviewer{
 
   void PlotView::setColorMap(QString& clrMap)
   {
-    openstudio::FloodPlotColorMap::ColorMapList clrMapType;
+    FloodPlotColorMap::ColorMapList clrMapType;
     if (clrMap.toUpper() == "GRAY")
     {
-      clrMapType = openstudio::FloodPlotColorMap::Gray;
+      clrMapType = FloodPlotColorMap::Gray;
       setColorMap(clrMapType);
     }
     else if (clrMap.toUpper() == "JET")
     {
-      clrMapType = openstudio::FloodPlotColorMap::Jet;
+      clrMapType = FloodPlotColorMap::Jet;
       setColorMap(clrMapType);
     }
 
   }
 
-  void PlotView::setColorMap(openstudio::FloodPlotColorMap::ColorMapList clrMap)
+  void PlotView::setColorMap(FloodPlotColorMap::ColorMapList clrMap)
   {
     m_colorMapType = clrMap;
     initColorMap();
@@ -1114,7 +1113,7 @@ namespace resultsviewer{
 
   void PlotView::initColorMap()
   {
-    auto colorMap = new openstudio::FloodPlotColorMap(m_colorLevels, m_colorMapType);
+    auto colorMap = new FloodPlotColorMap(m_colorLevels, m_colorMapType);
     m_spectrogram->setColorMap(colorMap);
     //m_spectrogram->setData(m_floodPlotData); // DLM: why is this here?
   }
@@ -1153,7 +1152,7 @@ namespace resultsviewer{
 
   void PlotView::initColorBar()
   {
-    auto colorMap = new openstudio::FloodPlotColorMap(m_colorLevels, m_colorMapType);
+    auto colorMap = new FloodPlotColorMap(m_colorLevels, m_colorMapType);
 
     QwtScaleWidget *rightAxis = m_plot->axisWidget(QwtPlot::yRight);
     rightAxis->setColorBarEnabled(true);
@@ -1189,7 +1188,7 @@ namespace resultsviewer{
       if ( endOffset > m_xAxisMax ) m_xAxisMax = endOffset;
     }
 
-    openstudio::TimeSeriesLinePlotData data(*_plotViewData.ts);
+    TimeSeriesLinePlotData data(*_plotViewData.ts);
 
     m_centerSlider->setRange(100*m_xAxisMin, 100*m_xAxisMax);
     m_spanSlider->setRange(0, 50*(m_xAxisMax - m_xAxisMin));
@@ -1221,7 +1220,7 @@ namespace resultsviewer{
     curve->attach(m_plot);
 
     // check for number of different units (std::string  based)
-    QString curveUnits = openstudio::toQString(data.units());
+    QString curveUnits = QString::fromStdString(data.units());
     if (m_leftAxisUnits == "NONE SPECIFIED")
     {
       m_leftAxisUnits = curveUnits;

@@ -69,6 +69,24 @@
 #include <qwt/qwt_plot_spectrogram.h>
 
 #include "TimeSeries.hpp"
+#if __has_include(<optional>)
+#include <optional>
+#elif __has_include(<experimental/optional>)
+#include <experimental/optional>
+namespace std
+{
+using namespace experimental;
+}
+#elif __has_include("Optional/optional.hpp")
+#include "Optional/optional.hpp"
+namespace std
+{
+using namespace experimental;
+}
+#else
+#error No available optional found
+#endif
+//#include <optional>
 //#include "../utilities/time/Date.hpp"
 
 namespace resultsviewer{
@@ -89,7 +107,7 @@ namespace resultsviewer{
   class LinePlotCurve : public QwtPlotCurve
   {
   public:
-    LinePlotCurve(QString& title, openstudio::TimeSeriesLinePlotData& data);
+    LinePlotCurve(QString& title, resultsviewer::TimeSeriesLinePlotData& data);
     //  LinePlotCurve(QString title):QwtPlotCurve(title){};
 
     void setLegend(QString legend) {m_legend=legend;}
@@ -108,7 +126,7 @@ namespace resultsviewer{
 
     // assign data and update array members
     void setDataMode(YValueType yType);
-    void setLinePlotData(const openstudio::LinePlotData& data);
+    void setLinePlotData(const resultsviewer::LinePlotData& data);
 
     YValueType yType() {return m_yType;}
     LinePlotStyleType linePlotStyle() {return m_linePlotStyle;}
@@ -168,7 +186,7 @@ namespace resultsviewer{
     QString windowTitle;
     QString xAxisTitle;
     QString yAxisTitle;
-    openstudio::OptionalTimeSeries ts;
+    std::optional<TimeSeries> ts;
   };
 
   /**  PlotViewMimeData supports dropping plotViewData of drag/drop operations
@@ -196,19 +214,19 @@ namespace resultsviewer{
 
     virtual QwtText label(double fracDays) const override
     {
-      openstudio::Time timeFromFracDays(fracDays);
+      QTime timeFromFracDays = fromFracDays<QTime>(fracDays);
       //    openstudio::Date date = openstudio::Date::fromDayOfYear(timeFromFracDays.days()); Date issue with day 366 in year 2009
       //  Fix this - update year outside of Date class
-      int dayOfYear = timeFromFracDays.days();
+      int dayOfYear = static_cast<int>(std::floor(timeFromFracDays.hour()/24.0));
+      int hour = timeFromFracDays.hour() - 24*(dayOfYear-1);
       while (dayOfYear < 1) dayOfYear +=365;
       while (dayOfYear > 365) dayOfYear -=365;
       openstudio::Date date = openstudio::Date::fromDayOfYear(dayOfYear);
-
       unsigned day = date.dayOfMonth();
       unsigned month = openstudio::month(date.monthOfYear());
-      int hour = timeFromFracDays.hours();
-      int minutes = timeFromFracDays.minutes();
-      int seconds = timeFromFracDays.seconds();
+      
+      int minutes = timeFromFracDays.minute();
+      int seconds = timeFromFracDays.second();
 
       QString s;
 
@@ -235,13 +253,13 @@ namespace resultsviewer{
       return s;
     }
 
-    const openstudio::DateTime startDateTime() const {return m_startDateTime;}
-    void startDateTime(const openstudio::DateTime &_startDate) {m_startDateTime = _startDate;}
+    const QDateTime startDateTime() const {return m_startDateTime;}
+    void startDateTime(const QDateTime &_startDate) {m_startDateTime = _startDate;}
     const int plotType() const {return m_plotType;}
     void plotType(const int _plotType) {m_plotType = _plotType;}
 
   private:
-    openstudio::DateTime m_startDateTime;
+    QDateTime m_startDateTime;
     int m_plotType;
   };
 
@@ -319,7 +337,7 @@ signals:
     void showSpectrogram(bool on);
     QStringList colorMapList();
     int colorMap() {return (int)m_colorMapType;}
-    void setColorMap(openstudio::FloodPlotColorMap::ColorMapList clrMap);
+    void setColorMap(resultsviewer::FloodPlotColorMap::ColorMapList clrMap);
     void setColorMap(QString& clrMap);
     // number of qwtPlotCurves on plot
     int numberOfCurves();
@@ -443,8 +461,8 @@ signals:
     int m_lineThickness;
 
     // time axis for multiple curves
-    openstudio::DateTime m_startDateTime;
-    openstudio::DateTime m_endDateTime;
+    QDateTime m_startDateTime;
+    QDateTime m_endDateTime;
     double m_duration;
     PlotViewTimeAxis *m_plotViewTimeAxis;
 
@@ -469,18 +487,18 @@ signals:
     QwtLinearColorMap m_colorMap;
     QwtPlotSpectrogram* m_spectrogram;
     QwtScaleWidget* m_rightAxis;
-    openstudio::FloodPlotData* m_floodPlotData;
-    openstudio::FloodPlotColorMap::ColorMapList m_colorMapType;
+    resultsviewer::FloodPlotData* m_floodPlotData;
+    resultsviewer::FloodPlotColorMap::ColorMapList m_colorMapType;
     QwtInterval m_dataRange;
-    openstudio::Vector m_colorLevels;
+    std::vector<double> m_colorLevels;
     void initColorMap();
     void initColorBar();
     int m_colorMapLength;
 
     // Flood Plot
-    void contourLevels(openstudio::Vector& contourValues);
+    void contourLevels(std::vector<double>& contourValues);
     void colorMapRange(double min, double max);
-    void colorLevels(openstudio::Vector& colorLevels);
+    void colorLevels(std::vector<double>& colorLevels);
     // spectrogram and contour
     bool m_spectrogramOn;
     bool m_contourOn;
@@ -515,8 +533,8 @@ signals:
     void printLegend(QPainter *p, const QRect &rect);
 
     // illuminance map hourly report indices
-    std::vector< std::pair<int, openstudio::DateTime> > m_illuminanceMapReportIndicesDates;
-    std::vector<openstudio::FloodPlotData*> m_illuminanceMapData;
+    std::vector< std::pair<int, QDateTime> > m_illuminanceMapReportIndicesDates;
+    std::vector<resultsviewer::FloodPlotData*> m_illuminanceMapData;
     // difference index
     std::vector< std::pair<int,int> > m_illuminanceMapDifferenceReportIndices;
     void plotDataAvailable(bool available);
